@@ -8,8 +8,8 @@
 // @grant        GM_xmlhttpRequest
 // @connect     https://api.imamkatz.com/
 // @connect     https://api.tmwstw.io
-// @updateURL    https://github.com/katzworld/WalkingtheWorld-v2/raw/main/MAP%20github%20-7.63.user.js
-// @downloadURL  https://github.com/katzworld/WalkingtheWorld-v2/raw/main/MAP%20github%20-7.63.user.js
+// @updateURL    https://github.com/katzworld/tMonkey/blob/main/tMonkey.js
+// @downloadURL  https://github.com/katzworld/tMonkey/blob/main/tMonkey.js
 // ==/UserScript==
 
 
@@ -214,10 +214,10 @@
                     if (r.responseType == 'json') {
                         let f_dat = r.response;
                         //console.log(f_dat)
-                        let bob = f_dat.bob;
-                        let slag = f_dat.slag;
-                        let grease = f_dat.grease;
-                        let ink = f_dat.ink;
+                        const bob = f_dat.bob;
+                        const slag = f_dat.slag;
+                        const grease = f_dat.grease;
+                        const ink = f_dat.ink;
 
                         const createSpan = (id, value, color = "black", fontStyle = "normal", fontWeight = "normal") => {
                             return `<span id='${id}' style="color: ${color}; font-style: ${fontStyle}; font-weight: ${fontWeight};">${id.charAt(0).toUpperCase() + id.slice(1)}: ${value} </span>`;
@@ -307,14 +307,14 @@
     observerOfHud.observe(targetOfHud, configOfHud)
 
     let faucetMenu = (obs_dicso) => {
-        //console.log(targetOfHud)
-        //document.querySelector("#claim_but_container")
-        //<div class="claim_but_container" id="claim_but_container">
-        //<h3 class="faucet_texts_title" id="claim_cont_title">RESOURCES</h3>
-        //<button class="faucet_buttons" id="claim_but_bob" name="claim" style="display: block;">CLAIM 3 $BOB</button>
-        //<button class="faucet_buttons" id="claim_but_slag" name="claim" style="display: block;">CLAIM 1 $SLAG</button>
-        //<button class="faucet_buttons" id="claim_but_grease" name="" style="display: none;">
-        //</button><button class="faucet_buttons" id="claim_but_ink" name="claim" style="display: block;">CLAIM 90 $INK</button></div>
+        console.log(targetOfHud)
+        document.querySelector("#claim_but_container")
+        // <div class="claim_but_container" id="claim_but_container">
+        // <h3 class="faucet_texts_title" id="claim_cont_title">RESOURCES</h3>
+        // <button class="faucet_buttons" id="claim_but_bob" name="claim" style="display: block;">CLAIM 3 $BOB</button>
+        // <button class="faucet_buttons" id="claim_but_slag" name="claim" style="display: block;">CLAIM 1 $SLAG</button>
+        // <button class="faucet_buttons" id="claim_but_grease" name="" style="display: none;">
+        // </button><button class="faucet_buttons" id="claim_but_ink" name="claim" style="display: block;">CLAIM 90 $INK</button></div>
         let bob = document.querySelector("#claim_but_bob")
         let slag = document.querySelector("#claim_but_slag")
         let grease = document.querySelector("#claim_but_grease")
@@ -322,22 +322,19 @@
         // RUGS if bob grease or ink == 0 then that is a rug color span black BOOO! keep hunting
         // if undefined yellow the span + italic
         // if bob ==20 , slag = 25  grease  or ink = 150 insert style = "color: red; and bolder in the #bob span yo!
-        if (bob.textContent == 'CLAIM 20 $BOB') {
-            bob.style.backgroundColor = '#D00'
-            bob.style.color = '#FFF'
+        // Function to update the style of an element based on its text content
+        function updateStyle(element, text, backgroundColor, color) {
+            if (element.textContent === text) {
+                element.style.backgroundColor = backgroundColor;
+                element.style.color = color;
+            }
         }
-        if (slag.textContent == 'CLAIM 25 $SLAG') {
-            slag.style.backgroundColor = '#D00'
-            slag.style.color = '#FFF'
-        }
-        if (grease.textContent == 'CLAIM 150 $GREASE') {
-            grease.style.backgroundColor = '#D00'
-            grease.style.color = '#FFF'
-        }
-        if (ink.textContent == 'CLAIM 150 $INK') {
-            ink.style.backgroundColor = '#D00'
-            ink.style.color = '#FFF'
-        }
+
+        // Update styles for specific elements
+        updateStyle(bob, 'CLAIM 20 $BOB', '#D00', '#FFF');
+        updateStyle(slag, 'CLAIM 25 $SLAG', '#D00', '#FFF');
+        updateStyle(grease, 'CLAIM 150 $GREASE', '#D00', '#FFF');
+        updateStyle(ink, 'CLAIM 150 $INK', '#D00', '#FFF');
         //return
         obs_dicso
     }
@@ -358,48 +355,41 @@
 
 
     var onKeyEvent = function (ev) {
-        var state = "pressed";
-        //console.log(event)
-        if (ev.code == 'KeyL') {// CAP L hold SHIFT Ocean Search
-            let compassRow = document.getElementsByClassName('compas_text_big')
-            let places = document.getElementsByClassName('compas_text')
-            let distance = document.getElementsByClassName('compas_dist_text')
-
-            for (let i = 0; i < compassRow.length; i++) {
-                compassRow[i].style.color = '#D00' // TEXT color of carn diraction 'NSEW'
-            }
-
+        if (ev.code === 'KeyL') { // CAP L hold SHIFT Ocean Search
+            let compassRow = document.getElementsByClassName('compas_text_big');
+            let places = document.getElementsByClassName('compas_text');
+            let distance = document.getElementsByClassName('compas_dist_text');
             let chatCont = document.querySelector("#chat_cont");
             let plotOwner = document.querySelector("#plot_owner");
 
+            // Function to update styles
+            function updateStyles(elements, color, fontWeight) {
+                for (let i = 0; i < elements.length; i++) {
+                    elements[i].style.color = color;
+                    elements[i].style.fontWeight = fontWeight;
+                }
+            }
+
+            // Toggle styles based on current state
             if (chatCont.style.fontWeight === 'normal') {
                 chatCont.style.fontWeight = 'bolder';
                 chatCont.style.color = '#000';
                 plotOwner.style.color = '#000';
-
-                for (let i = 0; i < places.length; i++) {
-                    places[i].style.color = '#000'; // TEXT color for location name
-                    places[i].style.fontWeight = 'bolder';
-                    distance[i].style.color = '#000'; // TEXT color of distance marker
-                    distance[i].style.fontWeight = 'bolder';
-                }
+                updateStyles(places, '#000', 'bolder');
+                updateStyles(distance, '#000', 'bolder');
             } else {
                 chatCont.style.fontWeight = 'normal';
                 chatCont.style.color = '#FFF';
                 plotOwner.style.color = '#FFF';
+                updateStyles(places, '#FFF', 'normal');
+                updateStyles(distance, '#57FF33', 'normal');
+            }
 
-                for (let i = 0; i < places.length; i++) {
-                    places[i].style.color = '#FFF'; // TEXT color for location name
-                    places[i].style.fontWeight = 'normal';
-                    distance[i].style.color = '#57FF33'; // TEXT color of distance marker
-                    distance[i].style.fontWeight = 'normal';
-                }
-            }
-            for (let i = 0; i < compassRow.length; i++) {
-                compassRow[i].style.color = '#D00' // TEXT color of carn diraction 'NSEW'
-            }
+            // Update compass row styles
+            updateStyles(compassRow, '#D00', 'normal');
         }
-    }
+    };
+
     document.addEventListener("keypress", onKeyEvent, false);
     document.addEventListener("keydown", onKeyEvent, false);
     document.addEventListener("keyup", onKeyEvent, false);

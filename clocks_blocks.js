@@ -8,8 +8,8 @@
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=tmwstw.io
 // @grant        GM_xmlhttpRequest
 // @connect      https://clock.imamkatz.com/*
-// @updateURL    https://raw.githubusercontent.com/katzworld/WalkingtheWorld-v2/main/Clocks%20and%20Blocks-V0.5.user.js
-// @downloadURL  https://raw.githubusercontent.com/katzworld/WalkingtheWorld-v2/main/Clocks%20and%20Blocks-V0.5.user.js
+// @updateURL    https://raw.githubusercontent.com/katzworld/tMonkey/main/clocks_blocks.js
+// @downloadURL  https://raw.githubusercontent.com/katzworld/tMonkey/main/clocks_blocks.js
 // ==/UserScript==
 
 (function () {

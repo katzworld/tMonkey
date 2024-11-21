@@ -3,14 +3,13 @@
 // @namespace    https://github.com/katzworld/WalkingtheWorld-v2
 // @version      8.88
 // @description  Dora is a bitch IM THE MAP + smoken da bear!
-// @author       @KaTZWorlD  on X  ask about the seaturtles!!! aye seaturles
+// @author       @KaTZWorlD on X  ask about the seaturtles!!! aye seaturles
 // @match        https://play.tmwstw.io/*
 // @grant        GM_xmlhttpRequest
 // @connect     https://api.imamkatz.com/
 // @connect     https://api.tmwstw.io
-// @updateURL    https://github.com/katzworld/tMonkey/blob/main/tMonkey.js
-// @downloadURL  https://github.com/katzworld/tMonkey/blob/main/tMonkey.js
-// ==/UserScript==
+// @updateURL    https://raw.githubusercontent.com/katzworld/tMonkey/main/tMonkey.js
+// @downloadURL  https://raw.githubusercontent.com/katzworld/tMonkey/main/tMonkey.js
 
 
 

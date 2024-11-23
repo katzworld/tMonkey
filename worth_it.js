@@ -8,6 +8,8 @@
 // @icon         https://shwamp.tmwstw.io/src/duck.png
 // @grant        GM_xmlhttpRequest
 // @connect      https://etc.blockscout.com/api/*
+// @updateURL    https://raw.githubusercontent.com/katzworld/tMonkey/main/worth_it.js
+// @downloadURL  https://raw.githubusercontent.com/katzworld/tMonkey/main/worth_it.js
 // ==/UserScript==
 
 (function () {

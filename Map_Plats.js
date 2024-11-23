@@ -6,8 +6,8 @@
 // @author       @KaTZWorlD on X  ask about the seaturtles!!! aye seaturles
 // @match        https://play.tmwstw.io/*
 // @grant        GM_xmlhttpRequest
-// @connect     https://api.imamkatz.com/
-// @connect     https://api.tmwstw.io
+// @connect      https://api.imamkatz.com/
+// @connect      https://api.tmwstw.io
 // @updateURL    https://raw.githubusercontent.com/katzworld/tMonkey/main/tMonkey.js
 // @downloadURL  https://raw.githubusercontent.com/katzworld/tMonkey/main/tMonkey.js
 

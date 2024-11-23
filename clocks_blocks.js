@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Clocks and Blocks
 // @namespace    http://tampermonkey.net/
-// @version      V1.1420
+// @version      V1.442
 // @description  Clocks and blocks with surronding plats
 // @author       KaTZWorlD #370
 // @match        https://play.tmwstw.io/*
@@ -18,7 +18,7 @@
     div.id = 'tMFilm';
     div.style = 'display: none;';
     document.querySelector("#title_container").appendChild(div);
-    // add another dive below the film div to display the block number
+    // add another div below the film div to display the block number
     const blockDiv = document.createElement('div');
     blockDiv.id = 'blockNumber';
     blockDiv.style = 'display: block;';
@@ -29,7 +29,8 @@
     let SLAGMID = [], GREASEMID = [], INKMID = [];
     let namesPlats = [];
     let averageBlockTime = '13000' //got something to start with
-    const claimsPlats = [];
+    let claimsPlats = [];
+    let blockStart = null;
 
     /**
      * Fetch data from the API and log the response.
@@ -77,22 +78,24 @@
     const states = ['bob', 'slag', 'grease', 'ink'];
     const midStates = ['slag', 'grease', 'ink'];
 
-    states.forEach(state => {
-        fetchData(state, (data) => {
-            switch (state) {
+    const updateStateData = (state, isMidState = false) => {
+        const fetchFunction = isMidState ? fetchMids : fetchData;
 
-                case 'bob':
-                    BOB = data.map(item => item[0]);
-                    break;
-                case 'slag':
-                    SLAG = data.map(item => item[0]);
-                    break;
-                case 'grease':
-                    GREASE = data.map(item => item[0]);
-                    break;
-                case 'ink':
-                    INK = data.map(item => item[0]);
-                    break;
+        const stateMapping = {
+            bob: { array: BOB, isMidState: false },
+            slag: { array: SLAG, isMidState: false },
+            grease: { array: GREASE, isMidState: false },
+            ink: { array: INK, isMidState: false },
+            slagMid: { array: SLAGMID, isMidState: true },
+            greaseMid: { array: GREASEMID, isMidState: true },
+            inkMid: { array: INKMID, isMidState: true }
+        };
+
+        fetchFunction(state, (data) => {
+            const key = isMidState ? `${state}Mid` : state;
+            if (stateMapping[key]) {
+                stateMapping[key].array.length = 0; // Clear existing array
+                stateMapping[key].array.push(...data.map(item => item[0]));
             }
             data.forEach(item => {
                 if (item[1] !== 0) {
@@ -100,28 +103,8 @@
                 }
             });
         });
-    });
+    };
 
-    midStates.forEach(state => {
-        fetchMids(state, (data) => {
-            switch (state) {
-                case 'slag':
-                    SLAGMID = data.map(item => item[0]);
-                    break;
-                case 'grease':
-                    GREASEMID = data.map(item => item[0]);
-                    break;
-                case 'ink':
-                    INKMID = data.map(item => item[0]);
-                    break;
-            }
-            data.forEach(item => {
-                if (item[1] !== 0) {
-                    claimsPlats.push(item[0]);
-                }
-            });
-        });
-    });
 
     // Fetch named plats
     const fetchNamedPlats = () => {
@@ -139,8 +122,16 @@
         });
     };
 
-    fetchNamedPlats();
+    // Call the function for each state
 
+    states.forEach(state => {
+        updateStateData(state);
+    });
+
+    midStates.forEach(state => {
+        updateStateData(state, true);
+    });
+    fetchNamedPlats();
 
     const watcherOfMap = new MutationObserver((entries, observer) => {
         whatsLocal(observer)
@@ -219,6 +210,7 @@
     }
 
 
+
     // Function to fetch block number and display it
     function fetchBlockNumberAndDisplay() {
         GM_xmlhttpRequest({
@@ -232,26 +224,39 @@
                 const blockData = jsonResponse[0]; // Assuming the response is an array and we need the first element
                 const blockHeight = blockData.height;
 
-                // Assuming averageBlockTime is defined somewhere in your code
-                const firstTwoDigits = averageBlockTime.toString().slice(0, 2);
+                // Store the initial block height if not already set
+                if (blockStart === null) {
+                    blockStart = blockHeight;
+                }
 
-                // Display the block information in the div blockNumber
-                const blockDiv = document.getElementById('blockNumber');
-                blockDiv.innerHTML = ''; // Clear existing content
-                blockDiv.style.display = 'block';
-                blockDiv.style.color = 'white';
-                blockDiv.style.fontSize = '20px';
-                blockDiv.style.padding = '10px';
-                blockDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-                blockDiv.textContent = `ETC Block # ${blockHeight} Average Block Time: ${firstTwoDigits} sec(s)`;
+                // Function to apply styles to the blockDiv
+                const applyBlockDivStyles = (blockDiv, blockHeight, message) => {
+                    blockDiv.innerHTML = ''; // Clear existing content
+                    blockDiv.style.display = 'block';
+                    blockDiv.style.color = 'white';
+                    blockDiv.style.fontSize = '20px';
+                    blockDiv.style.padding = '10px';
+                    blockDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                    blockDiv.textContent = `ETC Block # ${blockHeight} ${message}`;
 
-                // Create and append the iframe element
-                const iframe = document.createElement("iframe");
-                iframe.src = "https://tmwttw.imamkatz.com/Tracker/framer.html";
-                iframe.width = "100%";
-                iframe.height = "175px";
-                iframe.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
-                blockDiv.appendChild(iframe);
+                    // Create and append the iframe element
+                    const iframe = document.createElement("iframe");
+                    iframe.src = "https://tmwttw.imamkatz.com/Tracker/framer.html";
+                    iframe.width = "100%";
+                    iframe.height = "175px";
+                    iframe.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+                    blockDiv.appendChild(iframe);
+                    //console.log(claimsPlats);
+                };
+
+                // Check if 50 blocks have passed since the initial block height
+                if (blockHeight >= blockStart + 50) {
+                    const blockDiv = document.getElementById('blockNumber');
+                    applyBlockDivStyles(blockDiv, blockHeight, '- 50 blocks :: ClaimsPlats data is OLD! :: ');
+                } else {
+                    const blockDiv = document.getElementById('blockNumber');
+                    applyBlockDivStyles(blockDiv, blockHeight, `Average Block Time: ${averageBlockTime.toString().slice(0, 2)} sec(s)`);
+                }
             }
         });
     }
@@ -265,7 +270,6 @@
         filmDiv.style.fontSize = '20px';
         filmDiv.style.padding = '10px';
         filmDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-        //console.log(claims)
         // Split r string into array named rplats
         const rplats = r.replace('[', '').replace(']', '').split(',').map(Number);
 
@@ -340,5 +344,6 @@
             fetchBlockNumberAndDisplay(filmDiv);
         }
     }, averageBlockTime);
+
 
 })();

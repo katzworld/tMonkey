@@ -12,7 +12,6 @@
 // @downloadURL  https://raw.githubusercontent.com/katzworld/tMonkey/main/tMonkey.js
 
 
-
 (function () {
     const sidebar = 150 //image map
     let ens; // Declare ens as a global variable
@@ -385,7 +384,7 @@
             }
 
             // Update compass row styles
-            updateStyles(compassRow, '#D00', 'normal');
+            updateStyles(compassRow, '#D00', 'bolder');
         }
     };
 

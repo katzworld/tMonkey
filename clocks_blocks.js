@@ -29,6 +29,7 @@
     let SLAGMID = [], GREASEMID = [], INKMID = [];
     let namesPlats = [];
     let averageBlockTime = '13000' //got something to start with
+    const claimsPlats = [];
 
     /**
      * Fetch data from the API and log the response.
@@ -79,6 +80,7 @@
     states.forEach(state => {
         fetchData(state, (data) => {
             switch (state) {
+
                 case 'bob':
                     BOB = data.map(item => item[0]);
                     break;
@@ -92,6 +94,11 @@
                     INK = data.map(item => item[0]);
                     break;
             }
+            data.forEach(item => {
+                if (item[1] !== 0) {
+                    claimsPlats.push(item[0]);
+                }
+            });
         });
     });
 
@@ -108,6 +115,11 @@
                     INKMID = data.map(item => item[0]);
                     break;
             }
+            data.forEach(item => {
+                if (item[1] !== 0) {
+                    claimsPlats.push(item[0]);
+                }
+            });
         });
     });
 
@@ -201,7 +213,7 @@
         function checkPlats() {
             if (close !== undefined && touching !== undefined && folgers !== undefined) {
                 //console.log('close: ' + close, 'touching: ' + touching);
-                showFilmContent(close, touching, folgers);
+                showFilmContent(close, touching, folgers, claimsPlats);
             }
         }
     }
@@ -210,31 +222,29 @@
     // Function to fetch block number and display it
     function fetchBlockNumberAndDisplay() {
         GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://eth.blockscout.com/api/eth-rpc",
+            method: "GET",
+            url: "https://etc.blockscout.com/api/v2/main-page/blocks",
             headers: {
                 "Content-Type": "application/json"
             },
-            data: JSON.stringify({
-                id: 0,
-                jsonrpc: "2.0",
-                method: "eth_blockNumber",
-                params: []
-            }),
             onload: function (response) {
                 const jsonResponse = JSON.parse(response.responseText);
-                const decResult = parseInt(jsonResponse.result, 16);
+                const blockData = jsonResponse[0]; // Assuming the response is an array and we need the first element
+                const blockHeight = blockData.height;
+
+                // Assuming averageBlockTime is defined somewhere in your code
                 const firstTwoDigits = averageBlockTime.toString().slice(0, 2);
+
                 // Display the block information in the div blockNumber
                 const blockDiv = document.getElementById('blockNumber');
                 blockDiv.innerHTML = ''; // Clear existing content
                 blockDiv.style.display = 'block';
-
                 blockDiv.style.color = 'white';
                 blockDiv.style.fontSize = '20px';
                 blockDiv.style.padding = '10px';
                 blockDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-                blockDiv.textContent = `ETC Block # ${decResult} Avg. Block: ${firstTwoDigits} sec(s)`;
+                blockDiv.textContent = `ETC Block # ${blockHeight} Average Block Time: ${firstTwoDigits} sec(s)`;
+
                 // Create and append the iframe element
                 const iframe = document.createElement("iframe");
                 iframe.src = "https://tmwttw.imamkatz.com/Tracker/framer.html";
@@ -247,7 +257,7 @@
     }
 
     // Function to display film content
-    function showFilmContent(r, underline, folgers) {
+    function showFilmContent(r, underline, folgers, readyclaims) {
         const filmDiv = document.getElementById('tMFilm');
         filmDiv.innerHTML = ''; // Clear existing content
         filmDiv.style.display = 'block';
@@ -255,49 +265,54 @@
         filmDiv.style.fontSize = '20px';
         filmDiv.style.padding = '10px';
         filmDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-
+        //console.log(claims)
         // Split r string into array named rplats
         const rplats = r.replace('[', '').replace(']', '').split(',').map(Number);
 
         const styles = {
-            BOB: { color: 'yellow', fontWeight: 'bold', text: 'Bob 20' },
-            SLAGMID: { color: 'darkred', text: 'Slag 16' },
-            SLAG: { color: 'red', fontWeight: 'bold', text: 'Slag 25' },
-            GREASEMID: { color: 'darkgreen', text: 'Grease 150+' },
-            GREASE: { color: 'green', fontWeight: 'bold', text: 'Grease 200+' },
-            INKMID: { color: 'darkblue', text: 'Ink 90+' },
-            INK: { color: 'blue', fontWeight: 'bold', text: 'Ink 150+' },
-            FOLGERS: { color: 'orange', fontWeight: 'bold', text: 'UNTAPPED' },
+            BOB: { color: 'yellow', fontWeight: 'bold', text: 'Bob 20 ' },
+            SLAGMID: { color: 'darkred', text: 'Slag 16 ' },
+            SLAG: { color: 'red', fontWeight: 'bold', text: 'Slag 25 ' },
+            GREASEMID: { color: 'darkgreen', text: 'Grease 150+ ' },
+            GREASE: { color: 'green', fontWeight: 'bold', text: 'Grease 200+ ' },
+            INKMID: { color: 'darkblue', text: 'Ink 90+ ' },
+            INK: { color: 'blue', fontWeight: 'bold', text: 'Ink 150+ ' },
+            FOLGERS: { color: 'orange', fontWeight: 'bold', text: 'UNTAPPED ' },
+            CLAIMS: { color: 'purple', fontWeight: 'bold', text: ' * ' }
         };
 
         const applyStyles = (plat, name) => {
-            if (BOB.includes(plat)) return { ...styles.BOB, text: ` ${plat} ${name} / ${styles.BOB.text},` };
-            if (SLAGMID.includes(plat)) return { ...styles.SLAGMID, text: ` ${plat} ${name} / ${styles.SLAGMID.text}, ` };
-            if (SLAG.includes(plat)) return { ...styles.SLAG, text: ` ${plat} ${name} / ${styles.SLAG.text}, ` };
-            if (GREASEMID.includes(plat)) return { ...styles.GREASEMID, text: ` ${plat} ${name} / ${styles.GREASEMID.text},` };
-            if (GREASE.includes(plat)) return { ...styles.GREASE, text: ` ${plat} ${name} / ${styles.GREASE.text},` };
-            if (INKMID.includes(plat)) return { ...styles.INKMID, text: ` ${plat} ${name} / ${styles.INKMID.text},` };
-            if (INK.includes(plat)) return { ...styles.INK, text: ` ${plat} ${name} / ${styles.INK.text},` };
-            if (folgers.includes(plat)) return { ...styles.FOLGERS, text: ` ${plat} ${name} / ${styles.FOLGERS.text},` };
-            return { text: ' ' };
+            let style = { text: `${plat} ${name}` };
+            if (BOB.includes(plat)) style = { ...styles.BOB, text: `${plat} ${name} / ${styles.BOB.text}` };
+            if (SLAGMID.includes(plat)) style = { ...styles.SLAGMID, text: `${plat} ${name} / ${styles.SLAGMID.text}` };
+            if (SLAG.includes(plat)) style = { ...styles.SLAG, text: `${plat} ${name} / ${styles.SLAG.text}` };
+            if (GREASEMID.includes(plat)) style = { ...styles.GREASEMID, text: `${plat} ${name} / ${styles.GREASEMID.text}` };
+            if (GREASE.includes(plat)) style = { ...styles.GREASE, text: `${plat} ${name} / ${styles.GREASE.text}` };
+            if (INKMID.includes(plat)) style = { ...styles.INKMID, text: `${plat} ${name} / ${styles.INKMID.text}` };
+            if (INK.includes(plat)) style = { ...styles.INK, text: `${plat} ${name} / ${styles.INK.text}` };
+            if (folgers.includes(plat)) style = { ...styles.FOLGERS, text: `${plat} ${name} / ${styles.FOLGERS.text}` };
+            if (readyclaims.includes(plat)) style = { ...style, text: `${style.text} ${styles.CLAIMS.text}` }; // Append CLAIMS text
+
+            return style;
         };
 
         rplats.forEach(plat => {
-            const span = document.createElement('span');
             const name = plat < namesPlats.length ? namesPlats[plat - 1] : '';
             const style = applyStyles(plat, name);
 
-            if (style.text.trim()) {
-                span.style.color = style.color || '';
+            // Only create span if style color is defined
+            if (style.color) {
+                const span = document.createElement('span');
+                span.style.color = style.color;
                 span.style.fontWeight = style.fontWeight || '';
                 span.textContent = style.text;
-            }
 
-            if (underline.includes(plat)) {
-                span.style.textDecoration = 'underline';
-            }
+                if (underline.includes(plat)) {
+                    span.style.textDecoration = 'underline';
+                }
 
-            filmDiv.appendChild(span);
+                filmDiv.appendChild(span);
+            }
         });
 
     }

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Clocks and Blocks
 // @namespace    http://tampermonkey.net/
-// @version      V1.442
+// @version      V1.445
 // @description  Clocks and blocks with surronding plats
 // @author       KaTZWorlD #370
 // @match        https://play.tmwstw.io/*
@@ -244,15 +244,16 @@
                     iframe.src = "https://tmwttw.imamkatz.com/Tracker/framer.html";
                     iframe.width = "100%";
                     iframe.height = "175px";
-                    iframe.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+                    // iframe.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
                     blockDiv.appendChild(iframe);
                     //console.log(claimsPlats);
                 };
 
                 // Check if 50 blocks have passed since the initial block height
-                if (blockHeight >= blockStart + 50) {
+                if (blockHeight >= blockStart + 100) {
                     const blockDiv = document.getElementById('blockNumber');
-                    applyBlockDivStyles(blockDiv, blockHeight, '- 50 blocks :: ClaimsPlats data is OLD! :: ');
+                    applyBlockDivStyles(blockDiv, blockHeight, `+100 blocks :: ClaimsPlats data is OLD! ::`);
+                    blockDiv.style.color = 'red';
                 } else {
                     const blockDiv = document.getElementById('blockNumber');
                     applyBlockDivStyles(blockDiv, blockHeight, `Average Block Time: ${averageBlockTime.toString().slice(0, 2)} sec(s)`);

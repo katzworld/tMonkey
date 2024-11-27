@@ -51,7 +51,7 @@ This collection of scripts is designed to improve various aspects of the TMWSTW 
 - Block Number Display: Fetches and displays the current ETC block number and average block time in the game's UI.
 - Styled Information Display: Applies specific styles to plats based on their states (e.g., BOB(yellow), SLAG(red), GREASE(green), INK(blue)) to provide visual cues for mid or **high givers**.
 
-### worth_it.js
+### Shwamp worth_it.js
 
 ![worth it image](worth%20it.png)
 
@@ -61,6 +61,12 @@ This collection of scripts is designed to improve various aspects of the TMWSTW 
 - Swap Value Calculation: Calculates and displays the swap value in USD based on the ETC price and the amount of ETC being swapped.
 - Dynamic Updates: Uses a MutationObserver to dynamically update the swap value when the input changes.
 - UI Integration: Integrates seamlessly into the game's UI by appending a div with the ETC price and swap value to the liquidity controls container.
+
+## ETC Worth It
+
+![ETC worth it](etc_worth_it.png)
+
+The `etcworth.js` script provides the same functionality as `worth_it.js`, displaying the current price of ETC in USD and the swap value on the ETCSwap.
 
 ## Installation
 
@@ -72,9 +78,11 @@ To install any of these scripts, follow these steps:
    - [builderUI.js](https://raw.githubusercontent.com/katzworld/tMonkey/main/builderUI.js)
    - [clocks_blocks.js](https://raw.githubusercontent.com/katzworld/tMonkey/main/clocks_blocks.js)
    - [worth_it.js](https://raw.githubusercontent.com/katzworld/tMonkey/main/worth_it.js)
+   - [etcworth.js](https://raw.githubusercontent.com/katzworld/tMonkey/main/etcworth.js)
+
 3. Tampermonkey will prompt you to install the script. Click "Install".
 4. Check for Permission in Tampermonkey to @connect
-5. Go out in world and use your new Augemented HUD
+5. Go out in world and use your new Augmented HUD
 
 ## Author
 

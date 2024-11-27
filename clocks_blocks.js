@@ -227,6 +227,7 @@
                 // Store the initial block height if not already set
                 if (blockStart === null) {
                     blockStart = blockHeight;
+                    console.log('setting blockStart:' + blockStart)
                 }
 
                 // Function to apply styles to the blockDiv
@@ -256,7 +257,7 @@
                     blockDiv.style.color = 'red';
                 } else {
                     const blockDiv = document.getElementById('blockNumber');
-                    applyBlockDivStyles(blockDiv, blockHeight, `Average Block Time: ${averageBlockTime.toString().slice(0, 2)} sec(s)`);
+                    applyBlockDivStyles(blockDiv, blockHeight, `Average Block Time: ${averageBlockTime.toString().slice(0, 2)} sec(s) -=- blockStart: ${blockStart}`);
                 }
             }
         });

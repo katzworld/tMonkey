@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MAP github
 // @namespace    https://github.com/katzworld/WalkingtheWorld-v2
-// @version      8.88
+// @version      8.90
 // @description  Dora is a bitch IM THE MAP + smoken da bear!
 // @author       @KaTZWorlD on X  ask about the seaturtles!!! aye seaturles
 // @match        https://play.tmwstw.io/*
@@ -10,6 +10,7 @@
 // @connect      https://api.tmwstw.io
 // @updateURL    https://raw.githubusercontent.com/katzworld/tMonkey/main/tMonkey.js
 // @downloadURL  https://raw.githubusercontent.com/katzworld/tMonkey/main/tMonkey.js
+// ==/UserScript==
 
 
 (function () {

@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         Clocks and Blocks
 // @namespace    http://tampermonkey.net/
-// @version      V1.445
+// @version      V1.447
 // @description  Clocks and blocks with surronding plats
 // @author       KaTZWorlD #370
 // @match        https://play.tmwstw.io/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=tmwstw.io
 // @grant        GM_xmlhttpRequest
 // @connect      https://clock.imamkatz.com/*
+// @connect      https://api.tmwstw.io/*
 // @updateURL    https://raw.githubusercontent.com/katzworld/tMonkey/main/clocks_blocks.js
 // @downloadURL  https://raw.githubusercontent.com/katzworld/tMonkey/main/clocks_blocks.js
 // ==/UserScript==
@@ -27,6 +28,7 @@
 
     let BOB = [], SLAG = [], GREASE = [], INK = [];
     let SLAGMID = [], GREASEMID = [], INKMID = [];
+    let BONUS = []
     let namesPlats = [];
     let averageBlockTime = '13000' //got something to start with
     let claimsPlats = [];
@@ -78,7 +80,7 @@
     const states = ['bob', 'slag', 'grease', 'ink'];
     const midStates = ['slag', 'grease', 'ink'];
 
-    const updateStateData = (state, isMidState = false) => {
+    function updateStateData(state, isMidState = false) {
         const fetchFunction = isMidState ? fetchMids : fetchData;
 
         const stateMapping = {
@@ -99,12 +101,25 @@
             }
             data.forEach(item => {
                 if (item[1] !== 0) {
-                    claimsPlats.push(item[0]);
+                    if (claimsPlats.includes(item[0])) {
+                        BONUS.push(item[0]);
+                    } else {
+                        claimsPlats.push(item[0]);
+                    }
                 }
             });
         });
-    };
+    }
 
+    function updateStatesData() {
+        states.forEach(state => {
+            updateStateData(state);
+        });
+
+        midStates.forEach(state => {
+            updateStateData(state, true);
+        });
+    }
 
     // Fetch named plats
     const fetchNamedPlats = () => {
@@ -122,16 +137,14 @@
         });
     };
 
-    // Call the function for each state
+    //setup the data
 
-    states.forEach(state => {
-        updateStateData(state);
-    });
-
-    midStates.forEach(state => {
-        updateStateData(state, true);
-    });
     fetchNamedPlats();
+
+    updateStatesData();
+
+
+
 
     const watcherOfMap = new MutationObserver((entries, observer) => {
         whatsLocal(observer)
@@ -150,7 +163,8 @@
         const plat = document.getElementById('plot_id').lastChild.textContent.slice(-4).replace('#', '').replace(' ', '');
         let close, touching, folgers
         if (plat) {
-            const surPlats = 'https://clock.imamkatz.com/platall/' + plat;
+            const surPlats = 'https://clock.imamkatz.com/platall/' + plat; // close touching + 1
+            //const surPlats = 'https://clock.imamkatz.com/surround/' + plat;  // close touching + 2 from postbox source code
             GM_xmlhttpRequest({
                 method: "GET",
                 headers: {
@@ -202,14 +216,12 @@
         }
 
         function checkPlats() {
-            if (close !== undefined && touching !== undefined && folgers !== undefined) {
+            if (close !== undefined && touching !== undefined && folgers !== undefined && BONUS !== undefined) {
                 //console.log('close: ' + close, 'touching: ' + touching);
-                showFilmContent(close, touching, folgers, claimsPlats);
+                showFilmContent(close, touching, folgers, claimsPlats, BONUS);
             }
         }
     }
-
-
 
     // Function to fetch block number and display it
     function fetchBlockNumberAndDisplay() {
@@ -227,7 +239,7 @@
                 // Store the initial block height if not already set
                 if (blockStart === null) {
                     blockStart = blockHeight;
-                    console.log('setting blockStart:' + blockStart)
+                    //console.log('setting blockStart:' + blockStart)
                 }
 
                 // Function to apply styles to the blockDiv
@@ -250,21 +262,28 @@
                     //console.log(claimsPlats);
                 };
 
-                // Check if 50 blocks have passed since the initial block height
+                // Check if 100 blocks have passed since the initial block height
                 if (blockHeight >= blockStart + 100) {
                     const blockDiv = document.getElementById('blockNumber');
-                    applyBlockDivStyles(blockDiv, blockHeight, `+100 blocks :: ClaimsPlats data is OLD! ::`);
+                    applyBlockDivStyles(blockDiv, blockHeight, `:: ClaimsPlats data is OLD! :: Refreshing... `);
                     blockDiv.style.color = 'red';
-                } else {
-                    const blockDiv = document.getElementById('blockNumber');
-                    applyBlockDivStyles(blockDiv, blockHeight, `Average Block Time: ${averageBlockTime.toString().slice(0, 2)} sec(s) -=- blockStart: ${blockStart}`);
+                    updateStatesData();
+                    //set new blockStart to current blockHeight and update the blocktime average 
+                    fetchBlockTime()
+                    blockStart = blockHeight;
+                    console.log('new block data fetched');
+
+                    return;
                 }
+                const blockDiv = document.getElementById('blockNumber');
+                applyBlockDivStyles(blockDiv, blockHeight, `Average Block Time: ${averageBlockTime.toString().slice(0, 2)} sec(s) -=- blockStart: ${blockStart}`);
+                showFilmContent(close, touching, folgers, claimsPlats);
             }
         });
     }
 
     // Function to display film content
-    function showFilmContent(r, underline, folgers, readyclaims) {
+    function showFilmContent(r, underline, folgers, readyclaims, bonus) {
         const filmDiv = document.getElementById('tMFilm');
         filmDiv.innerHTML = ''; // Clear existing content
         filmDiv.style.display = 'block';
@@ -284,20 +303,25 @@
             INKMID: { color: 'darkblue', text: 'Ink 90+ ' },
             INK: { color: 'blue', fontWeight: 'bold', text: 'Ink 150+ ' },
             FOLGERS: { color: 'orange', fontWeight: 'bold', text: 'UNTAPPED ' },
-            CLAIMS: { color: 'purple', fontWeight: 'bold', text: ' * ' }
+            CLAIMS: { fontWeight: 'bold', text: ' * ' },
+            BONUS: { color: 'white', fontWeight: 'bold', text: ' !! ' }
         };
 
         const applyStyles = (plat, name) => {
             let style = { text: `${plat} ${name}` };
-            if (BOB.includes(plat)) style = { ...styles.BOB, text: `${plat} ${name} / ${styles.BOB.text}` };
-            if (SLAGMID.includes(plat)) style = { ...styles.SLAGMID, text: `${plat} ${name} / ${styles.SLAGMID.text}` };
-            if (SLAG.includes(plat)) style = { ...styles.SLAG, text: `${plat} ${name} / ${styles.SLAG.text}` };
-            if (GREASEMID.includes(plat)) style = { ...styles.GREASEMID, text: `${plat} ${name} / ${styles.GREASEMID.text}` };
-            if (GREASE.includes(plat)) style = { ...styles.GREASE, text: `${plat} ${name} / ${styles.GREASE.text}` };
-            if (INKMID.includes(plat)) style = { ...styles.INKMID, text: `${plat} ${name} / ${styles.INKMID.text}` };
-            if (INK.includes(plat)) style = { ...styles.INK, text: `${plat} ${name} / ${styles.INK.text}` };
-            if (folgers.includes(plat)) style = { ...styles.FOLGERS, text: `${plat} ${name} / ${styles.FOLGERS.text}` };
+            if (BOB.includes(plat)) style = { ...styles.BOB, text: `${plat} ${name} - ${styles.BOB.text} ` };
+            if (SLAGMID.includes(plat)) style = { ...styles.SLAGMID, text: `${plat} ${name} - ${styles.SLAGMID.text} ` };
+            if (SLAG.includes(plat)) style = { ...styles.SLAG, text: `${plat} ${name} - ${styles.SLAG.text} ` };
+            if (GREASEMID.includes(plat)) style = { ...styles.GREASEMID, text: `${plat} ${name} - ${styles.GREASEMID.text} ` };
+            if (GREASE.includes(plat)) style = { ...styles.GREASE, text: `${plat} ${name} - ${styles.GREASE.text} ` };
+            if (INKMID.includes(plat)) style = { ...styles.INKMID, text: `${plat} ${name} - ${styles.INKMID.text} ` };
+            if (INK.includes(plat)) style = { ...styles.INK, text: `${plat} ${name} - ${styles.INK.text} ` };
+            if (folgers.includes(plat)) style = { ...styles.FOLGERS, text: `${plat} ${name} - ${styles.FOLGERS.text} ` };
             if (readyclaims.includes(plat)) style = { ...style, text: `${style.text} ${styles.CLAIMS.text}` }; // Append CLAIMS text
+            if (BONUS.includes(plat)) style = { ...style, text: `${style.text} ${styles.BONUS.text}` }; // Append BONUS text
+            // separate each with a , if more than one style is applied to the plat name apply all then add comma at the end
+            style.text = style.text + ', ';
+
 
             return style;
         };

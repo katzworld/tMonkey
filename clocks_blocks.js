@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Clocks and Blocks
 // @namespace    http://tampermonkey.net/
-// @version      V1.447
-// @description  Clocks and blocks with surronding plats
+// @version      V1.87
+// @description  Clocks and blocks with surronding plats zombies nodes and more
 // @author       KaTZWorlD #370
 // @match        https://play.tmwstw.io/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=tmwstw.io
@@ -33,7 +33,8 @@
     let averageBlockTime = '13000' //got something to start with
     let claimsPlats = [];
     let blockStart = null;
-
+    let close, touching, folgers
+    let ZOMBE_PLATS = [1100, 4076, 3998, 1316, 5407, 6368, 3886, 7302, 9976, 7673, 6358, 4106, 2320, 1540, 739, 4434, 6469, 392, 6178, 1228, 3948, 7438, 4395, 459, 1951, 4150, 3099, 415, 6522, 9710, 2827, 6000, 4992, 5797, 508, 8668, 3814, 7747, 1684, 6869, 4173, 4575, 1405, 7510, 7930, 7416, 806, 3958]
     /**
      * Fetch data from the API and log the response.
      * @param {string} state - The state to fetch (bob, slag, grease, ink).
@@ -143,25 +144,25 @@
 
     updateStatesData();
 
-
-
-
     const watcherOfMap = new MutationObserver((entries, observer) => {
-        whatsLocal(observer)
-    })
+        observer.disconnect(); // Stop observing
+        whatsLocal();
+    });
 
     const arrrrgMap = document.querySelector('#plot_owner');
     const listMap = {
         childList: true,
-    }
+    };
     if (arrrrgMap) {
         watcherOfMap.observe(arrrrgMap, listMap);
     } else {
         console.error('Target element for watcherOfMap not found.');
     }
+
+    // Updated whatsLocal function
     function whatsLocal() {
         const plat = document.getElementById('plot_id').lastChild.textContent.slice(-4).replace('#', '').replace(' ', '');
-        let close, touching, folgers
+
         if (plat) {
             const surPlats = 'https://clock.imamkatz.com/platall/' + plat; // close touching + 1
             //const surPlats = 'https://clock.imamkatz.com/surround/' + plat;  // close touching + 2 from postbox source code
@@ -176,7 +177,8 @@
                     close = response.response;
                     //console.log(close);
                     checkPlats();
-
+                    // Reconnect the observer after the function is executed
+                    watcherOfMap.observe(arrrrgMap, listMap);
                 }
             });
         }
@@ -193,6 +195,8 @@
                     touching = response.response;
                     //console.log(touching);
                     checkPlats();
+                    // Reconnect the observer after the function is executed
+                    watcherOfMap.observe(arrrrgMap, listMap);
                 }
             });
         }
@@ -211,14 +215,16 @@
                     folgers = response.response.filterPlots;
                     //console.log(folgers)
                     checkPlats();
+                    // Reconnect the observer after the function is executed
+                    watcherOfMap.observe(arrrrgMap, listMap);
                 },
             });
         }
 
         function checkPlats() {
-            if (close !== undefined && touching !== undefined && folgers !== undefined && BONUS !== undefined) {
+            if (close !== undefined && touching !== undefined && folgers !== undefined && BONUS !== undefined && ZOMBE_PLATS !== undefined) {
                 //console.log('close: ' + close, 'touching: ' + touching);
-                showFilmContent(close, touching, folgers, claimsPlats, BONUS);
+                showFilmContent(close, touching, folgers, claimsPlats, BONUS, ZOMBE_PLATS);
             }
         }
     }
@@ -277,13 +283,13 @@
                 }
                 const blockDiv = document.getElementById('blockNumber');
                 applyBlockDivStyles(blockDiv, blockHeight, `Average Block Time: ${averageBlockTime.toString().slice(0, 2)} sec(s) -=- blockStart: ${blockStart}`);
-                showFilmContent(close, touching, folgers, claimsPlats);
+                showFilmContent(close, touching, folgers, claimsPlats, BONUS, ZOMBE_PLATS)
             }
         });
     }
 
     // Function to display film content
-    function showFilmContent(r, underline, folgers, readyclaims, bonus) {
+    function showFilmContent(r, underline, folgers, readyclaims, bonus, zombePlats) {
         const filmDiv = document.getElementById('tMFilm');
         filmDiv.innerHTML = ''; // Clear existing content
         filmDiv.style.display = 'block';
@@ -292,7 +298,7 @@
         filmDiv.style.padding = '10px';
         filmDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
         // Split r string into array named rplats
-        const rplats = r.replace('[', '').replace(']', '').split(',').map(Number);
+        let rplats = r.replace('[', '').replace(']', '').split(',').map(Number);
 
         const styles = {
             BOB: { color: 'yellow', fontWeight: 'bold', text: 'Bob 20 ' },
@@ -304,24 +310,25 @@
             INK: { color: 'blue', fontWeight: 'bold', text: 'Ink 150+ ' },
             FOLGERS: { color: 'orange', fontWeight: 'bold', text: 'UNTAPPED ' },
             CLAIMS: { fontWeight: 'bold', text: ' * ' },
-            BONUS: { color: 'white', fontWeight: 'bold', text: ' !! ' }
+            BONUS: { color: 'white', fontWeight: 'bold', text: ' !! ' },
+            ZOMBE: { color: 'black', backgroundColor: 'white', text: 'ZOMBIE ' }
         };
 
         const applyStyles = (plat, name) => {
             let style = { text: `${plat} ${name}` };
-            if (BOB.includes(plat)) style = { ...styles.BOB, text: `${plat} ${name} - ${styles.BOB.text} ` };
-            if (SLAGMID.includes(plat)) style = { ...styles.SLAGMID, text: `${plat} ${name} - ${styles.SLAGMID.text} ` };
-            if (SLAG.includes(plat)) style = { ...styles.SLAG, text: `${plat} ${name} - ${styles.SLAG.text} ` };
-            if (GREASEMID.includes(plat)) style = { ...styles.GREASEMID, text: `${plat} ${name} - ${styles.GREASEMID.text} ` };
-            if (GREASE.includes(plat)) style = { ...styles.GREASE, text: `${plat} ${name} - ${styles.GREASE.text} ` };
-            if (INKMID.includes(plat)) style = { ...styles.INKMID, text: `${plat} ${name} - ${styles.INKMID.text} ` };
-            if (INK.includes(plat)) style = { ...styles.INK, text: `${plat} ${name} - ${styles.INK.text} ` };
-            if (folgers.includes(plat)) style = { ...styles.FOLGERS, text: `${plat} ${name} - ${styles.FOLGERS.text} ` };
-            if (readyclaims.includes(plat)) style = { ...style, text: `${style.text} ${styles.CLAIMS.text}` }; // Append CLAIMS text
-            if (BONUS.includes(plat)) style = { ...style, text: `${style.text} ${styles.BONUS.text}` }; // Append BONUS text
+            if (BOB && BOB.includes(plat)) style = { ...styles.BOB, text: `${plat} ${name} - ${styles.BOB.text} ` };
+            if (SLAGMID && SLAGMID.includes(plat)) style = { ...styles.SLAGMID, text: `${plat} ${name} - ${styles.SLAGMID.text} ` };
+            if (SLAG && SLAG.includes(plat)) style = { ...styles.SLAG, text: `${plat} ${name} - ${styles.SLAG.text} ` };
+            if (GREASEMID && GREASEMID.includes(plat)) style = { ...styles.GREASEMID, text: `${plat} ${name} - ${styles.GREASEMID.text} ` };
+            if (GREASE && GREASE.includes(plat)) style = { ...styles.GREASE, text: `${plat} ${name} - ${styles.GREASE.text} ` };
+            if (INKMID && INKMID.includes(plat)) style = { ...styles.INKMID, text: `${plat} ${name} - ${styles.INKMID.text} ` };
+            if (INK && INK.includes(plat)) style = { ...styles.INK, text: `${plat} ${name} - ${styles.INK.text} ` };
+            if (folgers && folgers.includes(plat)) style = { ...styles.FOLGERS, text: `${plat} ${name} - ${styles.FOLGERS.text} ` };
+            if (readyclaims && readyclaims.includes(plat)) style = { ...style, text: `${style.text} ${styles.CLAIMS.text}` }; // Append CLAIMS text
+            if (bonus && bonus.includes(plat)) style = { ...style, text: `${style.text} ${styles.BONUS.text}` }; // Append BONUS text
+            if (zombePlats && zombePlats.includes(plat)) style = { ...styles.ZOMBE, text: `${plat} ${name} - ${styles.ZOMBE.text} ` }; // Append ZOMBE text
             // separate each with a , if more than one style is applied to the plat name apply all then add comma at the end
             style.text = style.text + ', ';
-
 
             return style;
         };
@@ -335,6 +342,7 @@
                 const span = document.createElement('span');
                 span.style.color = style.color;
                 span.style.fontWeight = style.fontWeight || '';
+                span.style.backgroundColor = style.backgroundColor || '';
                 span.textContent = style.text;
 
                 if (underline.includes(plat)) {
